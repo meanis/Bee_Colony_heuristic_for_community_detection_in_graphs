@@ -1,0 +1,28 @@
+[project]
+name = "bcsa-dcd"
+version = "0.1.0"
+description = "Artificial bee colony + simulated annealing heuristic for (dynamic) community detection in graphs"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "matplotlib>=3.8",
+    "networkx>=3.2",
+    "numpy>=1.26",
+    "scikit-learn>=1.4",
+    "scipy>=1.11",
+]
+
+[project.optional-dependencies]
+# Only needed to generate synthetic dynamic benchmarks (Dynamic network generator/).
+generator = ["rdyn>=0.3.1", "tqdm>=4.66"]  # rdyn imports tqdm but does not declare it
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "ruff>=0.6",
+]
+
+[tool.uv]
+# Not an installable package yet: the code in app/ uses flat, script-style imports.
+# See docs/MODERNIZATION.md (Phase 3) for the planned src/ layout.
+package = false
