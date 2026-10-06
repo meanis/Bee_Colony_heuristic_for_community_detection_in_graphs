@@ -21,7 +21,7 @@ def read_static_network(file_):
             g.add_edge(line[0], line[1])
         g = nx.convert_node_labels_to_integers(g)
 
-        print(nx.info(g)) # debug
+        print(g)  # debug (nx.info was removed in networkx 3.0)
         snapshots.append(g)
 
     return snapshots
