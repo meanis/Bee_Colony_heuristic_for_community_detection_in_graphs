@@ -1,30 +1,12 @@
 from sklearn.metrics.cluster import normalized_mutual_info_score
 from scipy.stats import pearsonr
 import networkx as nx
+from networkx.algorithms.community import modularity as nx_modularity
 import math
 
 def modularity(snapshot, community_structure):
-
-    m = snapshot.number_of_edges()
-
-    e = []
-    a = []
-
-    for c in community_structure:
-
-        i = snapshot.subgraph(c).number_of_edges()
-        e.append(i/m)
-
-        j = 0.0
-        for n in c:
-            j += snapshot.degree[n]
-        a.append(j/(2*m))
-
-    q = 0.0
-    for ei,ai in zip(e,a):
-        q += (ei - ai**2)
-
-    return q
+    # Unweighted Newman modularity; raises NotAPartition if communities overlap or miss nodes.
+    return nx_modularity(snapshot, community_structure, weight=None)
 
 def NMI(A, B):
     A = node_labeling(A)

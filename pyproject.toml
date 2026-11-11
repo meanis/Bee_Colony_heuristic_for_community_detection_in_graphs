@@ -26,3 +26,8 @@ dev = [
 # Not an installable package yet: the code in app/ uses flat, script-style imports.
 # See docs/MODERNIZATION.md (Phase 3) for the planned src/ layout.
 package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# app/ uses flat imports (e.g. `import functions`); expose it until it becomes a package.
+pythonpath = ["app"]
