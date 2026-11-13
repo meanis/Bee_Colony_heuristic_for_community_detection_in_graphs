@@ -4,38 +4,12 @@ import networkx as nx
 import pytest
 
 from functions import locus_decode
-
-
-def reference_communities(solution):
-    """Union-find over the edges (i, solution[i]); independent of networkx."""
-    parent = list(range(len(solution)))
-
-    def find(x):
-        while parent[x] != x:
-            parent[x] = parent[parent[x]]
-            x = parent[x]
-        return x
-
-    for i, j in enumerate(solution):
-        parent[find(i)] = find(j)
-    groups = {}
-    for i in range(len(solution)):
-        groups.setdefault(find(i), set()).add(i)
-    return {frozenset(g) for g in groups.values()}
+from helpers import random_solution, reference_communities, unweighted_karate
 
 
 def as_set(communities):
     # Compare partitions regardless of the order of communities.
     return {frozenset(c) for c in communities}
-
-
-def unweighted_karate():
-    return nx.Graph(nx.karate_club_graph().edges())
-
-
-def random_solution(g, rng):
-    # Same construction as the app: each gene is a random neighbour of its node.
-    return [rng.choice(list(g[i])) for i in range(g.number_of_nodes())]
 
 
 @pytest.mark.parametrize('solution, expected', [
