@@ -15,13 +15,19 @@ approx = partial(pytest.approx, rel=1e-12)
 def reference_nmi(a, b):
     """NMI = 2 * I(A; B) / (H(A) + H(B)), from the textbook definition.
 
-    This is scikit-learn's default (average_method='arithmetic'). Undefined when both
-    labelings are a single community (H(A) + H(B) = 0); callers handle that case.
+    This is scikit-learn's default (average_method='arithmetic').
+
+    Zero entropy: a labeling with a single community has H = 0. If only one side is
+    constant, the formula is fine: I(A; B) = 0, so NMI = 0. If both are, H(A) + H(B) = 0
+    and the formula is 0/0. Like scikit-learn, we call that a perfect match (1.0): neither
+    labeling splits the nodes, so they agree.
     """
     n = len(a)
     count_a, count_b, joint = Counter(a), Counter(b), Counter(zip(a, b))
     h_a = -sum(c / n * math.log(c / n) for c in count_a.values())
     h_b = -sum(c / n * math.log(c / n) for c in count_b.values())
+    if h_a + h_b == 0:  # exact: a constant labeling's entropy is -1 * log(1) = 0.0
+        return 1.0
     mi = sum(c / n * math.log(c * n / (count_a[x] * count_b[y])) for (x, y), c in joint.items())
     return 2 * mi / (h_a + h_b)
 
@@ -44,13 +50,25 @@ def test_independent_partitions():
     assert NMI(PAIRS, CROSSED) == approx(0)
 
 
-def test_single_community_vs_split():
-    assert NMI(ONE_COMMUNITY, PAIRS) == approx(0)
-
-
-def test_both_single_community():
-    # Entropy is zero on both sides; scikit-learn defines this case as a perfect match.
-    assert NMI(ONE_COMMUNITY, [3, 0, 1, 2]) == 1
+@pytest.mark.parametrize(
+    "a, b, expected",
+    [
+        # Both constant: H(A) + H(B) = 0, the 0/0 case. Defined as a perfect match.
+        ([0], [0], 1),                                  # a single node
+        (ONE_COMMUNITY, [3, 0, 1, 2], 1),
+        # Only one side constant: I(A; B) = 0, H(A) + H(B) > 0, so NMI = 0.
+        (ONE_COMMUNITY, PAIRS, 0),
+        (PAIRS, ONE_COMMUNITY, 0),
+        ([0, 1, 2], [1, 2, 0], 0),                      # all singletons vs one triangle
+        # B is not constant, but becomes constant once cut to A's length:
+        # B = {0, 1} {2}, compared on nodes 0-1 only, which are both in one community.
+        ([1, 0], [1, 0, 2], 1),
+    ],
+)
+def test_zero_entropy(a, b, expected):
+    la, lb = reference_labels(a), reference_labels(b)[:len(a)]
+    assert reference_nmi(la, lb) == approx(expected)
+    assert NMI(a, b) == approx(expected)  # approx also rejects NaN
 
 
 def test_symmetric():
