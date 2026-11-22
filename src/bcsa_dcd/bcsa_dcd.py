@@ -1,5 +1,5 @@
-from bcsa import bcsa
-from population_initializer import population_initializer as pop_init
+from .bcsa import bcsa
+from .population_initializer import population_initializer as pop_init
 
 class bcsa_dcd(object):
     def __init__(self, params, snapshots):

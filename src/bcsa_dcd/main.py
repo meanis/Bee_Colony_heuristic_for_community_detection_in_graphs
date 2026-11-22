@@ -1,11 +1,11 @@
 import sys
 import csv
 
-from bcsa_dcd import bcsa_dcd
-import read_configuration
-import read_network
-from write_results import write_results
-import analysis as anal
+from .bcsa_dcd import bcsa_dcd
+from . import read_configuration
+from . import read_network
+from .write_results import write_results
+from . import analysis as anal
 
 def main(argv):
 

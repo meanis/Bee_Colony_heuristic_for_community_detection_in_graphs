@@ -6,7 +6,7 @@ import networkx as nx
 import pytest
 from networkx.algorithms.community.quality import NotAPartition
 
-from functions import modularity
+from bcsa_dcd.functions import modularity
 
 # Only floating-point rounding noise is tolerated.
 approx = partial(pytest.approx, rel=1e-12)

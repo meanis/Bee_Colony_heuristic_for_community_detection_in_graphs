@@ -5,7 +5,7 @@ from functools import partial
 
 import pytest
 
-from functions import NMI
+from bcsa_dcd.functions import NMI
 from helpers import random_solution, reference_labels, unweighted_karate
 
 # Only floating-point rounding noise is tolerated.

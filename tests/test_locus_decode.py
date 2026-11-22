@@ -3,7 +3,7 @@ import random
 import networkx as nx
 import pytest
 
-from functions import locus_decode
+from bcsa_dcd.functions import locus_decode
 from helpers import random_solution, reference_communities, unweighted_karate
 
 

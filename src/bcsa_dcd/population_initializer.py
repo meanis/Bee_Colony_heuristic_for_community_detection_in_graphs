@@ -2,8 +2,8 @@ import random as rand
 import networkx as nx
 from networkx.algorithms.community import greedy_modularity_communities
 
-import functions as fun
-from food_source import food_source
+from . import functions as fun
+from .food_source import food_source
 
 class population_initializer(object):
     

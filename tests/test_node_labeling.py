@@ -2,7 +2,7 @@ import random
 
 import pytest
 
-from functions import node_labeling
+from bcsa_dcd.functions import node_labeling
 from helpers import random_solution, reference_communities, unweighted_karate
 
 

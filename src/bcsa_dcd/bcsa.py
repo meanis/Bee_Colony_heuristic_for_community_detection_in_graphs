@@ -4,8 +4,8 @@ import random as rand
 import numpy as np
 import networkx as nx
 
-from food_source import food_source
-import functions as fun
+from .food_source import food_source
+from . import functions as fun
 
 class bcsa(object):
     def __init__(self, params):

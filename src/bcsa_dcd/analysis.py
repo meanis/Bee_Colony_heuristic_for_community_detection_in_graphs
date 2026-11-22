@@ -1,8 +1,7 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 
-from functions import locus_decode
-from functions import node_labeling
+from .functions import node_labeling
 
 def draw(snapshots, partitions, analysis_data):
 

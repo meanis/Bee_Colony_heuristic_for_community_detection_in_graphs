@@ -14,11 +14,8 @@ matplotlib.use('Agg')  # before main imports pyplot: never open windows during t
 
 import pytest
 
-import analysis
-import functions
-import main
-import read_network
-from bcsa_dcd import bcsa_dcd
+from bcsa_dcd import analysis, functions, main, read_network
+from bcsa_dcd.bcsa_dcd import bcsa_dcd
 
 CUSTOM = Path(__file__).resolve().parent.parent / 'Datasets' / 'Dynamic' / 'Custom'
 CUSTOM_FILES = ['graph-1.csv', 'graph-2.csv', 'graph-3.csv']

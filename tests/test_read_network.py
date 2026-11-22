@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-import read_network
+from bcsa_dcd import read_network
 
 CUSTOM = Path(__file__).resolve().parent.parent / 'Datasets' / 'Dynamic' / 'Custom'
 
