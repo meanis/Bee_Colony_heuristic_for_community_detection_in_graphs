@@ -5,7 +5,7 @@ from functools import partial
 
 import pytest
 
-from bcsa_dcd.functions import NMI
+from bcsa_dcd.functions import nmi
 from helpers import random_solution, reference_labels, unweighted_karate
 
 # Only floating-point rounding noise is tolerated.
@@ -38,16 +38,16 @@ ONE_COMMUNITY = [1, 2, 3, 0]
 
 
 def test_identical_solutions():
-    assert NMI(PAIRS, PAIRS) == approx(1)
+    assert nmi(PAIRS, PAIRS) == approx(1)
 
 
 def test_same_partition_different_encoding():
     # A triangle encoded two ways is the same community.
-    assert NMI([1, 2, 0], [2, 0, 1]) == approx(1)
+    assert nmi([1, 2, 0], [2, 0, 1]) == approx(1)
 
 
 def test_independent_partitions():
-    assert NMI(PAIRS, CROSSED) == approx(0)
+    assert nmi(PAIRS, CROSSED) == approx(0)
 
 
 @pytest.mark.parametrize(
@@ -68,7 +68,7 @@ def test_independent_partitions():
 def test_zero_entropy(a, b, expected):
     la, lb = reference_labels(a), reference_labels(b)[:len(a)]
     assert reference_nmi(la, lb) == approx(expected)
-    assert NMI(a, b) == approx(expected)  # approx also rejects NaN
+    assert nmi(a, b) == approx(expected)  # approx also rejects NaN
 
 
 def test_symmetric():
@@ -76,7 +76,7 @@ def test_symmetric():
     rng = random.Random(0)
     for _ in range(50):
         a, b = random_solution(g, rng), random_solution(g, rng)
-        assert NMI(a, b) == approx(NMI(b, a))
+        assert nmi(a, b) == approx(nmi(b, a))
 
 
 def test_random_solutions_match_reference():
@@ -84,7 +84,7 @@ def test_random_solutions_match_reference():
     rng = random.Random(1)
     for _ in range(200):
         a, b = random_solution(g, rng), random_solution(g, rng)
-        assert NMI(a, b) == approx(reference_nmi(reference_labels(a), reference_labels(b)))
+        assert nmi(a, b) == approx(reference_nmi(reference_labels(a), reference_labels(b)))
 
 
 # --- Growing graphs: A is the previous snapshot's solution, B the current one. ---
@@ -97,23 +97,23 @@ def test_longer_second_solution_is_compared_on_the_shared_nodes():
         a = [rng.choice([v for v in g[i] if v < 20] or [i]) for i in range(20)]
         b = random_solution(g, rng)
         expected = reference_nmi(reference_labels(a), reference_labels(b)[:20])
-        assert NMI(a, b) == approx(expected)
+        assert nmi(a, b) == approx(expected)
 
 
 def test_new_nodes_do_not_change_the_shared_partition():
     # Before: {0, 1} {2, 3}. After: same communities on nodes 0-3, new node 4 joins {2, 3}
     # and new node 5 is alone. Only nodes 0-3 are compared, and they are unchanged.
     # (Keeping the last four nodes instead would give about 0.34.)
-    assert NMI(PAIRS, [1, 0, 3, 2, 2, 5]) == approx(1)
+    assert nmi(PAIRS, [1, 0, 3, 2, 2, 5]) == approx(1)
 
 
 def test_new_node_can_merge_old_communities():
     # Before: {0}, {1}. After, both point at new node 2: {0, 1, 2}.
     # On the shared nodes that is {0}, {1} vs {0, 1}: a split vs a single community.
-    assert NMI([0, 1], [2, 2, 2]) == approx(0)
+    assert nmi([0, 1], [2, 2, 2]) == approx(0)
 
 
 def test_longer_first_solution_raises():
     # Never happens in the app: nodes are never removed, so later solutions are never shorter.
     with pytest.raises(ValueError):
-        NMI(PAIRS + [4], PAIRS)
+        nmi(PAIRS + [4], PAIRS)

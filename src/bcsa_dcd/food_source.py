@@ -1,8 +1,7 @@
-class food_source(object):
+class FoodSource:
 
     def __init__(self, initial_solution, initial_cost):
         
-        super(food_source, self).__init__()
 
         self.trials = 0
 
@@ -14,4 +13,4 @@ class food_source(object):
     
     def __repr__(self):
         
-        return f'<food_source s:{self.solution} f:{self.cost} />'
+        return f'<FoodSource s:{self.solution} f:{self.cost} />'

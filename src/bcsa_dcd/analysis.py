@@ -27,11 +27,11 @@ def draw(snapshots, partitions, analysis_data):
         plt.xlabel('cycle de recherche')
         plt.ylabel('coût de la meilleure solution trouvée')
 
-        xMax = len(global_optimals)
-        yMin = global_optimals[0]
-        yMax = global_optimals[-1]
+        x_max = len(global_optimals)
+        y_min = global_optimals[0]
+        y_max = global_optimals[-1]
 
-        plt.text(5, yMax, 'f: ' + str(yMax), style='oblique', bbox={'facecolor':'orange', 'alpha':0.5, 'pad':10})
-        plt.axis([0, xMax + 1, yMin - 0.01, yMax + 0.01])
+        plt.text(5, y_max, 'f: ' + str(y_max), style='oblique', bbox={'facecolor':'orange', 'alpha':0.5, 'pad':10})
+        plt.axis([0, x_max + 1, y_min - 0.01, y_max + 0.01])
         plt.grid(True, which='both', axis='y')
         plt.show()

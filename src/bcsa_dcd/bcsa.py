@@ -4,12 +4,11 @@ import random as rand
 import numpy as np
 import networkx as nx
 
-from .food_source import food_source
+from .food_source import FoodSource
 from . import functions as fun
 
-class bcsa(object):
+class BCSA:
     def __init__(self, params):
-        super(bcsa, self).__init__()
 
         ######################################################
 
@@ -18,8 +17,8 @@ class bcsa(object):
         self.limit_cycles = int(params['limit_cycles'])
         self.employed_bees_number = self.nb_s
 
-        E = params['employed_bees_percentage']
-        self.onlooker_bees_number = round(self.nb_s * ((1 / E) - 1))
+        employed_bees_share = params['employed_bees_percentage']
+        self.onlooker_bees_number = round(self.nb_s * ((1 / employed_bees_share) - 1))
 
         ######################################################
 
@@ -112,30 +111,30 @@ class bcsa(object):
 
 #########################################################################################
 
-    def accept(self, new_fs_cost, current_fs_cost, T):
+    def accept(self, new_fs_cost, current_fs_cost, temperature):
 
         if (new_fs_cost > current_fs_cost):
             return True
         else:
             r = rand.uniform(1, np.e)
-            return (r < ( np.exp( ( current_fs_cost - new_fs_cost ) / T ) ))
+            return (r < ( np.exp( ( current_fs_cost - new_fs_cost ) / temperature ) ))
 
     def simulated_annealing_stage(self, fs):
 
-        T = self.T0
+        temperature = self.T0
 
-        while T > self.Tmin:
+        while temperature > self.Tmin:
 
             for _ in range(self.cycles_per_t):
 
                 new_fs = self.generate_fs(fs)
 
-                if self.accept(new_fs.cost, fs.cost, T):
+                if self.accept(new_fs.cost, fs.cost, temperature):
 
                     fs.solution = new_fs.solution
                     fs.cost = new_fs.cost
 
-            T = T * self.alpha
+            temperature = temperature * self.alpha
 
 #########################################################################################
 
@@ -154,7 +153,7 @@ class bcsa(object):
             except IndexError:
                 new_solution[i] = i
 
-        return food_source(new_solution, self.cost(new_solution))
+        return FoodSource(new_solution, self.cost(new_solution))
 
 #########################################################################################
 
@@ -193,14 +192,14 @@ class bcsa(object):
 
         cost = self.cost(solution)
 
-        return food_source(solution, cost)
+        return FoodSource(solution, cost)
 
 #########################################################################################
 
     def cost(self, solution):
 
         community_structure = fun.locus_decode(solution)
-        cost = (self.gamma * fun.modularity(self.snapshot, community_structure)) + ((1-self.gamma) * fun.NMI(self.last_snapshot_community_structure, solution))
+        cost = (self.gamma * fun.modularity(self.snapshot, community_structure)) + ((1-self.gamma) * fun.nmi(self.last_snapshot_community_structure, solution))
         return cost
 
 #########################################################################################

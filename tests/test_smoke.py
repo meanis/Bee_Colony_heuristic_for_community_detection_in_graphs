@@ -15,7 +15,7 @@ matplotlib.use('Agg')  # before main imports pyplot: never open windows during t
 import pytest
 
 from bcsa_dcd import analysis, functions, main, read_network
-from bcsa_dcd.bcsa_dcd import bcsa_dcd
+from bcsa_dcd.detector import BCSADCD
 
 CUSTOM = Path(__file__).resolve().parent.parent / 'Datasets' / 'Dynamic' / 'Custom'
 CUSTOM_FILES = ['graph-1.csv', 'graph-2.csv', 'graph-3.csv']
@@ -72,7 +72,7 @@ def params():
 
 def run(snapshots, seed):
     random.seed(seed)
-    return bcsa_dcd(params(), snapshots).execute()
+    return BCSADCD(params(), snapshots).execute()
 
 
 def assert_valid_result(snapshots, partitions, analysis_data):
@@ -126,12 +126,12 @@ def test_main_writes_results_and_plots(mode, custom_dir, tmp_path, monkeypatch):
 
     runs = []  # each execution's (partitions, analysis_data), to compare with the CSV
 
-    class RecordingRun(bcsa_dcd):
+    class RecordingRun(BCSADCD):
         def execute(self):
             runs.append(super().execute())
             return runs[-1]
 
-    monkeypatch.setattr(main, 'bcsa_dcd', RecordingRun)
+    monkeypatch.setattr(main, 'BCSADCD', RecordingRun)
     shown = []
     monkeypatch.setattr(analysis.plt, 'show', lambda: shown.append(1))
     monkeypatch.chdir(tmp_path)  # main writes results.csv to the working directory

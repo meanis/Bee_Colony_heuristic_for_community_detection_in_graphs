@@ -1,7 +1,7 @@
 import sys
 import csv
 
-from .bcsa_dcd import bcsa_dcd
+from .detector import BCSADCD
 from . import read_configuration
 from . import read_network
 from .write_results import write_results
@@ -36,7 +36,7 @@ def main(argv):
 
         for _ in range(int(params['nb_exec'])):
             print('execution number: ', (_ + 1))
-            mobcsa_dcd_ = bcsa_dcd(params, snapshots)
+            mobcsa_dcd_ = BCSADCD(params, snapshots)
             partitions, analysis_data = mobcsa_dcd_.execute()
             write_results(writer, params, analysis_data)
 

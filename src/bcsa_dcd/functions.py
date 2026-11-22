@@ -8,21 +8,21 @@ def modularity(snapshot, community_structure):
     # Unweighted Newman modularity; raises NotAPartition if communities overlap or miss nodes.
     return nx_modularity(snapshot, community_structure, weight=None)
 
-def NMI(A, B):
-    A = node_labeling(A)
-    B = node_labeling(B)
-    if (len(A) < len(B)):
-        B = B[0:len(A)]
-    return normalized_mutual_info_score(A, B)
+def nmi(solution_a, solution_b):
+    labels_a = node_labeling(solution_a)
+    labels_b = node_labeling(solution_b)
+    if (len(labels_a) < len(labels_b)):
+        labels_b = labels_b[0:len(labels_a)]
+    return normalized_mutual_info_score(labels_a, labels_b)
 
 def pearson_correlation(snapshot):
 
     r = []
-    A = nx.to_numpy_array(snapshot)
+    adjacency = nx.to_numpy_array(snapshot)
     for n in range(snapshot.number_of_nodes()):
         l = []
         for m in snapshot[n]:
-            x = pearsonr(A[n], A[m])[0]
+            x = pearsonr(adjacency[n], adjacency[m])[0]
             l.append(1 / (1 + math.exp(-x)))
         r.append(l)
     return r

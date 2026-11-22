@@ -3,12 +3,11 @@ import networkx as nx
 from networkx.algorithms.community import greedy_modularity_communities
 
 from . import functions as fun
-from .food_source import food_source
+from .food_source import FoodSource
 
-class population_initializer(object):
+class PopulationInitializer:
     
     def __init__(self, sigma, nb_s):
-        super(population_initializer, self).__init__()
 
         ######################################################
 
@@ -47,7 +46,7 @@ class population_initializer(object):
 
         cost = self.cost(solution)
 
-        return food_source(solution, cost)
+        return FoodSource(solution, cost)
 
     def elite_selection(self):
 
@@ -60,7 +59,7 @@ class population_initializer(object):
                         solution[node1] = node2
         cost = self.cost(solution)
 
-        return food_source(solution, cost)
+        return FoodSource(solution, cost)
 
     def cost(self, solution):
 

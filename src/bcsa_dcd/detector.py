@@ -1,9 +1,8 @@
-from .bcsa import bcsa
-from .population_initializer import population_initializer as pop_init
+from .bcsa import BCSA
+from .population_initializer import PopulationInitializer
 
-class bcsa_dcd(object):
+class BCSADCD:
     def __init__(self, params, snapshots):
-        super(bcsa_dcd, self).__init__()
         
         ######################################################
         
@@ -14,10 +13,10 @@ class bcsa_dcd(object):
 
     def execute(self):
 
-        pop_init_ = pop_init(float(self.params['sigma']), int(self.params['nb_s']))
+        pop_init_ = PopulationInitializer(float(self.params['sigma']), int(self.params['nb_s']))
         initial_population = pop_init_.init_snapshot_pop(self.snapshots[0])
 
-        mobcsa_ = bcsa(self.params)
+        mobcsa_ = BCSA(self.params)
 
         community_structures = []
 
