@@ -118,7 +118,7 @@ def test_same_seed_same_result(custom_dir):
 
 
 @pytest.mark.parametrize('mode', ['static', 'dynamic'])
-def test_main_writes_results_and_plots(mode, custom_dir, tmp_path, monkeypatch):
+def test_main_writes_results_and_plots(mode, custom_dir, tmp_path, monkeypatch, capsys):
     config = tmp_path / 'config.csv'
     config.write_text(''.join(f'{key}:{value}\n' for key, value in CONFIG.items()))
     path = str(CUSTOM / 'graph-1.csv') if mode == 'static' else custom_dir
@@ -152,3 +152,5 @@ def test_main_writes_results_and_plots(mode, custom_dir, tmp_path, monkeypatch):
         # despite the header: issue #3). str(float) round-trips exactly.
         assert [float(v) for v in row[len(PARAM_COLUMNS):]] == [fs.cost for fs in partitions]
     assert len(shown) == 2 * n_snapshots  # a community drawing and a convergence chart each
+
+    assert capsys.readouterr().out == ''  # progress goes to logging, never to print

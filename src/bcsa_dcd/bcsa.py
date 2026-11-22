@@ -1,11 +1,14 @@
 from operator import attrgetter
 import copy
+import logging
 import random as rand
 import numpy as np
 import networkx as nx
 
 from .food_source import FoodSource
 from . import functions as fun
+
+logger = logging.getLogger(__name__)
 
 class BCSA:
     def __init__(self, params):
@@ -57,7 +60,7 @@ class BCSA:
         self.population = self.repair_population(initial_population, self.snapshot)
         self.global_best_fs = copy.deepcopy(self.best_fs())
 
-        for _ in range(self.nb_cycles):
+        for cycle in range(1, self.nb_cycles + 1):
             self.employed_bees_stage()
             self.onlooker_bees_stage()
             self.scout_bees_stage()
@@ -65,7 +68,7 @@ class BCSA:
 
             if (self.best_fs().cost > self.global_best_fs.cost ):
                 self.global_best_fs = copy.deepcopy(self.best_fs())
-                print(self.global_best_fs.cost)  # debug
+                logger.debug('Cycle %d: new best objective %s', cycle, self.global_best_fs.cost)
 
             self.snapshot_analysis_data['global_optimal'].append(self.global_best_fs.cost)
 

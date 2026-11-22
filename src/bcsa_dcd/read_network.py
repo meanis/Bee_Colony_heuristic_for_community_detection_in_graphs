@@ -1,9 +1,12 @@
 from os import listdir
+import logging
 import re
 import csv
 from copy import deepcopy
 
 import networkx as nx
+
+logger = logging.getLogger(__name__)
 
 #########################################################################
 
@@ -21,7 +24,7 @@ def read_static_network(file_):
             g.add_edge(line[0], line[1])
         g = nx.convert_node_labels_to_integers(g)
 
-        print(g)  # debug (nx.info was removed in networkx 3.0)
+        logger.debug('Read %s: %s', file_, g)
         snapshots.append(g)
 
     return snapshots
