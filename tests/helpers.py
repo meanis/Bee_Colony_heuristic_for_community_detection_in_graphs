@@ -1,5 +1,6 @@
 """Shared test helpers: graphs, random solutions and references independent of the app code."""
 
+import json
 from pathlib import Path
 
 import networkx as nx
@@ -11,15 +12,25 @@ CUSTOM = Path(__file__).resolve().parent.parent / 'Datasets' / 'Dynamic' / 'Cust
 # the default 0.05, int(10 * 0.05) = 0 genes change). sigma = 0.2 seeds 2 of the 10 food
 # sources from CNM, so the elite path runs too.
 CONFIG = {
-    'nb_exec': 2, 'nb_s': 10, 'nb_cycles': 5, 'limit_cycles': 2,
+    'nb_s': 10, 'nb_cycles': 5, 'limit_cycles': 2,
     'employed_bees_percentage': 0.5, 'T0': 1000, 'Tmin': 100, 'alpha': 0.6,
     'cycles_per_t': 2, 'gamma': 0.8, 'sigma': 0.2, 'delta': 0.2,
 }
 
 
+def toml_value(value):
+    if isinstance(value, bool):
+        return 'true' if value else 'false'
+    if isinstance(value, str):
+        return json.dumps(value)  # a TOML basic string
+    return repr(value)  # int, float, inf, nan
+
+
 def write_config(path, **overrides):
-    """Write CONFIG, with overrides, in the key:value format; return the path as a string."""
-    path.write_text(''.join(f'{key}:{value}\n' for key, value in {**CONFIG, **overrides}.items()))
+    """Write CONFIG as TOML, with overrides (None leaves the key out); return the path as a string."""
+    values = {**CONFIG, **overrides}
+    path.write_text(''.join(f'{key} = {toml_value(value)}\n'
+                            for key, value in values.items() if value is not None))
     return str(path)
 
 

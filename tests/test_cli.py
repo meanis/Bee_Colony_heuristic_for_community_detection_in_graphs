@@ -32,7 +32,7 @@ def shown(monkeypatch):
 
 @pytest.fixture
 def config(tmp_path):
-    return lambda **overrides: write_config(tmp_path / 'config.csv', **overrides)
+    return lambda **overrides: write_config(tmp_path / 'config.toml', **overrides)
 
 
 def run(*args):
@@ -43,12 +43,20 @@ def rows(path):
     return path.read_text(encoding='utf-8').splitlines()[1:]  # without the header
 
 
-def test_output_runs_and_no_plot(tmp_path, config, shown):
+@pytest.mark.parametrize('runs_flag, runs', [([], 1), (['--runs', 3], 3)])
+def test_output_runs_and_no_plot(runs_flag, runs, tmp_path, config, shown):
     output = tmp_path / 'new' / 'results.csv'  # the folder does not exist yet
-    run(GRAPH, '--mode', 'static', '--config', config(nb_exec=2), '--output', output,
-        '--runs', 3, '--no-plot')
-    assert len(rows(output)) == 3  # --runs overrides nb_exec
+    run(GRAPH, '--mode', 'static', '--config', config(), '--output', output, '--no-plot',
+        *runs_flag)
+    assert len(rows(output)) == runs  # one run unless --runs says otherwise
     assert shown == []
+
+
+def test_config_toml_is_the_default(tmp_path, monkeypatch, shown):
+    write_config(tmp_path / 'config.toml')
+    monkeypatch.chdir(tmp_path)
+    run(GRAPH, '--mode', 'static', '--no-plot')
+    assert len(rows(tmp_path / 'results.csv')) == 1
 
 
 def test_same_seed_same_results(tmp_path, config, shown):
@@ -74,7 +82,7 @@ def test_log_level(flags, level, tmp_path, config, shown):
     package_logger = logging.getLogger('bcsa_dcd')
     before = package_logger.level
     try:
-        run(GRAPH, '--mode', 'static', '--config', config(nb_exec=1),
+        run(GRAPH, '--mode', 'static', '--config', config(),
             '--output', tmp_path / 'r.csv', '--no-plot', *flags)
         assert package_logger.level == level
     finally:
@@ -87,8 +95,11 @@ BAD_INPUT = {
     'unknown mode': (lambda tmp, config: [GRAPH, '--mode', 'dinamic', '--config', config()],
                      'invalid choice'),
     'no mode': (lambda tmp, config: [GRAPH, '--config', config()], '--mode'),
-    'nb_exec = 0': (lambda tmp, config: [GRAPH, '--mode', 'static', '--config', config(nb_exec=0)],
-                    'nb_exec'),
+    # gamma, not alpha: if the check broke, alpha = 1 would make the run never end.
+    'parameter out of range': (lambda tmp, config: [GRAPH, '--mode', 'static',
+                                                    '--config', config(gamma=1.5)], 'gamma'),
+    'nb_exec in the config': (lambda tmp, config: [GRAPH, '--mode', 'static',
+                                                   '--config', config(nb_exec=2)], '--runs'),
     'runs = 0': (lambda tmp, config: [GRAPH, '--mode', 'static', '--config', config(), '--runs', 0],
                  '--runs'),
     'static on a folder': (lambda tmp, config: [CUSTOM, '--mode', 'static', '--config', config()],

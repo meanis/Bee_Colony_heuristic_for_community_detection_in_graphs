@@ -1,0 +1,19 @@
+# Parameters of the bee colony + simulated annealing search (bcsa-dcd --config).
+# Every key is required. The number of runs is not set here: it is the --runs option.
+
+# Bee colony
+nb_s = 100                      # food sources (candidate solutions), one employed bee each
+nb_cycles = 50                  # search cycles per snapshot
+limit_cycles = 10               # a food source not improved for more cycles than this is abandoned
+employed_bees_percentage = 0.5  # employed bees / all bees: 0.5 means as many onlookers as employed bees
+
+# Simulated annealing, run on the best food source at the end of each cycle
+T0 = 1000.0                     # starting temperature
+Tmin = 100.0                    # stops when the temperature is no longer above this
+alpha = 0.6                     # cooling factor: T = alpha * T, in (0, 1)
+cycles_per_t = 5                # moves tried at each temperature
+
+# Objective and moves
+gamma = 0.8                     # objective = gamma * modularity + (1 - gamma) * NMI with the previous snapshot
+sigma = 0.0                     # share of the initial food sources built from CNM (greedy modularity); the rest are random
+delta = 0.05                    # share of nodes reassigned to a random neighbour in each move

@@ -13,11 +13,12 @@ matplotlib.use('Agg')  # before cli imports pyplot: never open windows during te
 
 import pytest
 
-from bcsa_dcd import analysis, cli, functions, read_network
+from bcsa_dcd import analysis, cli, config, functions, read_network
 from bcsa_dcd.detector import BCSADCD
 from helpers import CONFIG, CUSTOM, write_config
 
 CUSTOM_FILES = ['graph-1.csv', 'graph-2.csv', 'graph-3.csv']
+RUNS = 2
 PARAM_COLUMNS = ['nb_s', 'nb_cycles', 'limit_cycles', 'employed_bees_percentage', 'T0',
                  'Tmin', 'alpha', 'cycles_per_t', 'gamma', 'sigma', 'delta']
 
@@ -56,7 +57,7 @@ def growing_dir(tmp_path, pin_listing):
 
 
 def params():
-    return {key: float(value) for key, value in CONFIG.items()}  # as read_configuration does
+    return config.validate(CONFIG)  # typed, as the CLI loads them
 
 
 def run(snapshots, seed):
@@ -108,7 +109,7 @@ def test_same_seed_same_result(custom_dir):
 
 @pytest.mark.parametrize('mode', ['static', 'dynamic'])
 def test_cli_writes_results_and_plots(mode, custom_dir, tmp_path, monkeypatch, capsys):
-    config = write_config(tmp_path / 'config.csv')
+    config_file = write_config(tmp_path / 'config.toml')
     path = str(CUSTOM / 'graph-1.csv') if mode == 'static' else custom_dir
     n_snapshots = 1 if mode == 'static' else 3
 
@@ -124,7 +125,8 @@ def test_cli_writes_results_and_plots(mode, custom_dir, tmp_path, monkeypatch, c
     monkeypatch.setattr(analysis.plt, 'show', lambda: shown.append(1))
     monkeypatch.chdir(tmp_path)  # results.csv goes to the working directory by default
     try:
-        assert cli.main([path, '--mode', mode, '--config', config, '--seed', '0']) == 0
+        assert cli.main([path, '--mode', mode, '--config', config_file, '--seed', '0',
+                         '--runs', str(RUNS)]) == 0
     finally:
         analysis.plt.close('all')
 
@@ -132,7 +134,7 @@ def test_cli_writes_results_and_plots(mode, custom_dir, tmp_path, monkeypatch, c
         header, *rows = list(csv.reader(file))
     assert header == PARAM_COLUMNS + [f'Modularité of snapshot {i}'
                                       for i in range(1, n_snapshots + 1)]
-    assert len(rows) == len(runs) == CONFIG['nb_exec']
+    assert len(rows) == len(runs) == RUNS
     for row, (partitions, _) in zip(rows, runs):
         assert [float(v) for v in row[:len(PARAM_COLUMNS)]] == [CONFIG[k] for k in PARAM_COLUMNS]
         # Each snapshot column is that run's final objective (not pure modularity,

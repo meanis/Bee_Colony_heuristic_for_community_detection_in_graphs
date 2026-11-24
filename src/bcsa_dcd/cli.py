@@ -6,14 +6,13 @@ import logging
 import random
 from pathlib import Path
 
-from . import analysis, read_configuration, read_network
+from . import analysis, config, read_network
 from .detector import BCSADCD
 from .write_results import write_results
 
 logger = logging.getLogger(__name__)
 
-PARAM_COLUMNS = ['nb_s', 'nb_cycles', 'limit_cycles', 'employed_bees_percentage', 'T0',
-                 'Tmin', 'alpha', 'cycles_per_t', 'gamma', 'sigma', 'delta']
+PARAM_COLUMNS = list(config.PARAMETERS)
 
 
 def positive_int(text):
@@ -33,12 +32,12 @@ def build_parser():
         help='a graph file (static mode), or a folder of graph*.csv snapshot files (dynamic mode)')
     parser.add_argument('--mode', required=True, choices=['static', 'dynamic'],
                         help='one graph, or a sequence of snapshots')
-    parser.add_argument('--config', type=Path, default=Path('config.csv'),
-                        help='parameter file (default: %(default)s)')
+    parser.add_argument('--config', type=Path, default=Path('config.toml'),
+                        help='TOML parameter file (default: %(default)s)')
     parser.add_argument('--output', type=Path, default=Path('results.csv'),
                         help='results file, one row per run (default: %(default)s)')
-    parser.add_argument('--runs', type=positive_int,
-                        help='number of runs (default: nb_exec from the config)')
+    parser.add_argument('--runs', type=positive_int, default=1,
+                        help='number of runs, one results row each (default: %(default)s)')
     parser.add_argument('--seed', type=int,
                         help='seed for the random number generator, to make runs reproducible')
 
@@ -75,13 +74,10 @@ def main(argv=None):
     if not args.config.is_file():
         parser.error(f'config file not found: {args.config}')
 
-    params = read_configuration.read(args.config)
-    if args.runs is not None:
-        runs = args.runs
-    else:
-        runs = int(params['nb_exec'])
-        if runs < 1:
-            parser.error(f"nb_exec in {args.config} must be at least 1, got {params['nb_exec']:g}")
+    try:
+        params = config.load(args.config)
+    except config.ConfigError as error:
+        parser.error(f'{args.config}: {error}')
 
     if args.mode == 'static':
         snapshots = read_network.read_static_network(str(args.network))
@@ -98,8 +94,8 @@ def main(argv=None):
         writer = csv.writer(file, lineterminator='\n')
         writer.writerow(PARAM_COLUMNS + [f'Modularité of snapshot {i}'
                                          for i in range(1, len(snapshots) + 1)])
-        for run in range(1, runs + 1):
-            logger.info('Run %d of %d', run, runs)
+        for run in range(1, args.runs + 1):
+            logger.info('Run %d of %d', run, args.runs)
             partitions, analysis_data = BCSADCD(params, snapshots).execute()
             write_results(writer, params, analysis_data)
     logger.info('Results written to %s', args.output)
