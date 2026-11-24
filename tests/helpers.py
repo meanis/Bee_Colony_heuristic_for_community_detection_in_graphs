@@ -1,6 +1,26 @@
 """Shared test helpers: graphs, random solutions and references independent of the app code."""
 
+from pathlib import Path
+
 import networkx as nx
+
+CUSTOM = Path(__file__).resolve().parent.parent / 'Datasets' / 'Dynamic' / 'Custom'
+
+# A run small enough for about a second, large enough that every stage does some work.
+# delta = 0.2 so that a move changes at least one gene on these 5-10 node graphs (with
+# the default 0.05, int(10 * 0.05) = 0 genes change). sigma = 0.2 seeds 2 of the 10 food
+# sources from CNM, so the elite path runs too.
+CONFIG = {
+    'nb_exec': 2, 'nb_s': 10, 'nb_cycles': 5, 'limit_cycles': 2,
+    'employed_bees_percentage': 0.5, 'T0': 1000, 'Tmin': 100, 'alpha': 0.6,
+    'cycles_per_t': 2, 'gamma': 0.8, 'sigma': 0.2, 'delta': 0.2,
+}
+
+
+def write_config(path, **overrides):
+    """Write CONFIG, with overrides, in the key:value format; return the path as a string."""
+    path.write_text(''.join(f'{key}:{value}\n' for key, value in {**CONFIG, **overrides}.items()))
+    return str(path)
 
 
 def unweighted_karate():

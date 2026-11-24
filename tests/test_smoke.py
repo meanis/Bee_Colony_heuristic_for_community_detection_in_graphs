@@ -6,29 +6,18 @@ search changes, as long as it still produces valid results.
 
 import csv
 import random
-from pathlib import Path
 
 import matplotlib
 
-matplotlib.use('Agg')  # before main imports pyplot: never open windows during tests
+matplotlib.use('Agg')  # before cli imports pyplot: never open windows during tests
 
 import pytest
 
-from bcsa_dcd import analysis, functions, main, read_network
+from bcsa_dcd import analysis, cli, functions, read_network
 from bcsa_dcd.detector import BCSADCD
+from helpers import CONFIG, CUSTOM, write_config
 
-CUSTOM = Path(__file__).resolve().parent.parent / 'Datasets' / 'Dynamic' / 'Custom'
 CUSTOM_FILES = ['graph-1.csv', 'graph-2.csv', 'graph-3.csv']
-
-# Small enough to run in about a second, large enough that every stage does some work.
-# delta = 0.2 so that a move changes at least one gene on these 5-10 node graphs (with
-# the default 0.05, int(10 * 0.05) = 0 genes change). sigma = 0.2 seeds 2 of the 10 food
-# sources from CNM, so the elite path runs too.
-CONFIG = {
-    'nb_exec': 2, 'nb_s': 10, 'nb_cycles': 5, 'limit_cycles': 2,
-    'employed_bees_percentage': 0.5, 'T0': 1000, 'Tmin': 100, 'alpha': 0.6,
-    'cycles_per_t': 2, 'gamma': 0.8, 'sigma': 0.2, 'delta': 0.2,
-}
 PARAM_COLUMNS = ['nb_s', 'nb_cycles', 'limit_cycles', 'employed_bees_percentage', 'T0',
                  'Tmin', 'alpha', 'cycles_per_t', 'gamma', 'sigma', 'delta']
 
@@ -118,9 +107,8 @@ def test_same_seed_same_result(custom_dir):
 
 
 @pytest.mark.parametrize('mode', ['static', 'dynamic'])
-def test_main_writes_results_and_plots(mode, custom_dir, tmp_path, monkeypatch, capsys):
-    config = tmp_path / 'config.csv'
-    config.write_text(''.join(f'{key}:{value}\n' for key, value in CONFIG.items()))
+def test_cli_writes_results_and_plots(mode, custom_dir, tmp_path, monkeypatch, capsys):
+    config = write_config(tmp_path / 'config.csv')
     path = str(CUSTOM / 'graph-1.csv') if mode == 'static' else custom_dir
     n_snapshots = 1 if mode == 'static' else 3
 
@@ -131,13 +119,12 @@ def test_main_writes_results_and_plots(mode, custom_dir, tmp_path, monkeypatch, 
             runs.append(super().execute())
             return runs[-1]
 
-    monkeypatch.setattr(main, 'BCSADCD', RecordingRun)
+    monkeypatch.setattr(cli, 'BCSADCD', RecordingRun)
     shown = []
     monkeypatch.setattr(analysis.plt, 'show', lambda: shown.append(1))
-    monkeypatch.chdir(tmp_path)  # main writes results.csv to the working directory
-    random.seed(0)
+    monkeypatch.chdir(tmp_path)  # results.csv goes to the working directory by default
     try:
-        main.main(['main.py', str(config), mode, path])
+        assert cli.main([path, '--mode', mode, '--config', config, '--seed', '0']) == 0
     finally:
         analysis.plt.close('all')
 

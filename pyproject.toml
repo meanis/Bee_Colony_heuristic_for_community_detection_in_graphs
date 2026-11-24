@@ -12,6 +12,9 @@ dependencies = [
     "scipy>=1.11",
 ]
 
+[project.scripts]
+bcsa-dcd = "bcsa_dcd.cli:main"
+
 [project.optional-dependencies]
 # Only needed to generate synthetic dynamic benchmarks (Dynamic network generator/).
 generator = ["rdyn>=0.3.1", "tqdm>=4.66"]  # rdyn imports tqdm but does not declare it

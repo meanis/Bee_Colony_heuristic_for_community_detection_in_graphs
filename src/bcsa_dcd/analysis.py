@@ -1,9 +1,12 @@
+from pathlib import Path
+
 import networkx as nx
 import matplotlib.pyplot as plt
 
 from .functions import node_labeling
 
-def draw(snapshots, partitions, analysis_data):
+def draw(snapshots, partitions, analysis_data, plot_dir=None):
+    """Draw each snapshot's communities and convergence chart: shown, or saved in plot_dir."""
 
     for moment in range(len(snapshots)):
 
@@ -18,7 +21,7 @@ def draw(snapshots, partitions, analysis_data):
         plt.title('Les communautés du réseau social')
 
         nx.draw(g, pos=pos, with_labels=True, node_color=labels, node_size=80)
-        plt.show()
+        show_or_save(plot_dir, f'snapshot-{moment + 1}-communities.png')
 
         global_optimals = snapshot_analysis_data['global_optimal']
         plt.figure('Résultat de la détection de communautés')
@@ -34,4 +37,11 @@ def draw(snapshots, partitions, analysis_data):
         plt.text(5, y_max, 'f: ' + str(y_max), style='oblique', bbox={'facecolor':'orange', 'alpha':0.5, 'pad':10})
         plt.axis([0, x_max + 1, y_min - 0.01, y_max + 0.01])
         plt.grid(True, which='both', axis='y')
+        show_or_save(plot_dir, f'snapshot-{moment + 1}-convergence.png')
+
+def show_or_save(plot_dir, name):
+    if plot_dir is None:
         plt.show()
+    else:
+        plt.savefig(Path(plot_dir) / name)
+        plt.close()
