@@ -1,4 +1,4 @@
-name: Tests
+name: CI
 
 on:
   push:
@@ -39,3 +39,31 @@ jobs:
 
       - name: Run tests
         run: uv run --locked pytest -q
+
+  ruff:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
+        with:
+          enable-cache: true
+
+      # Only the dev group (ruff, pytest), at the versions in uv.lock: linting needs neither
+      # the package nor its dependencies.
+      - name: Install ruff
+        run: uv sync --locked --only-group dev
+
+      # --output-format=github turns each finding into an annotation on the changed line.
+      - name: Lint
+        run: uv run --no-sync ruff check --output-format=github .
+
+      # Runs even when the lint step failed, so that one push reports both.
+      - name: Check formatting
+        if: success() || failure()
+        run: uv run --no-sync ruff format --check --diff .
