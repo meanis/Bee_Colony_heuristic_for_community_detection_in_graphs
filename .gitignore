@@ -14,3 +14,8 @@ Datasets/**
 .idea/
 .vscode/
 .DS_Store
+
+# Modernisation working docs: kept local until the end of the modernisation
+/AGENTS.md
+/CLAUDE.md
+/docs/MODERNIZATION.md
