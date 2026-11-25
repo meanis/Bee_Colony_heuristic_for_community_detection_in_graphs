@@ -9,7 +9,6 @@ dependencies = [
     "networkx>=3.2",
     "numpy>=1.26",
     "scikit-learn>=1.4",
-    "scipy>=1.11",
 ]
 
 [project.scripts]

@@ -11,7 +11,6 @@ dependencies = [
     { name = "networkx" },
     { name = "numpy" },
     { name = "scikit-learn" },
-    { name = "scipy" },
 ]
 
 [package.optional-dependencies]
@@ -33,7 +32,6 @@ requires-dist = [
     { name = "numpy", specifier = ">=1.26" },
     { name = "rdyn", marker = "extra == 'generator'", specifier = ">=0.3.1" },
     { name = "scikit-learn", specifier = ">=1.4" },
-    { name = "scipy", specifier = ">=1.11" },
     { name = "tqdm", marker = "extra == 'generator'", specifier = ">=4.66" },
 ]
 provides-extras = ["generator"]

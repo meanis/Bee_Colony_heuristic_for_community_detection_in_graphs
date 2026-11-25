@@ -19,7 +19,6 @@ class PopulationInitializer:
     def init_snapshot_pop(self, snapshot):
 
         self.snapshot = snapshot
-        # self.pearson_correlation = fun.pearson_correlation(self.snapshot)
 
         population = []
 
@@ -40,7 +39,6 @@ class PopulationInitializer:
         for i in range(n):
             try:
                 solution.append(rand.choice(list(self.snapshot[i])))
-                # Disabled variant: rand.choices(neighbours, self.pearson_correlation[i])[0]
             except IndexError:
                 solution.append(i)
 

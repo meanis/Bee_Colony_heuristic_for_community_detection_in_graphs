@@ -51,7 +51,6 @@ class BCSA:
         self.snapshot_analysis_data = {'global_optimal': []}
 
         self.snapshot = snapshot
-        # self.pearson_correlation = fun.pearson_correlation(self.snapshot)
 
         self.last_snapshot_community_structure = max(
             initial_population, key=attrgetter('cost')
@@ -145,7 +144,6 @@ class BCSA:
         for i in chosen_indexes:
             try:
                 new_solution[i] = rand.choice(list(self.snapshot[i]))
-                # Disabled variant: rand.choices(neighbours, self.pearson_correlation[i])[0]
             except IndexError:
                 new_solution[i] = i
 
@@ -182,7 +180,6 @@ class BCSA:
         for i in range(n):
             try:
                 solution.append(rand.choice(list(self.snapshot[i])))
-                # Disabled variant: rand.choices(neighbours, self.pearson_correlation[i])[0]
             except IndexError:
                 solution.append(i)
 
