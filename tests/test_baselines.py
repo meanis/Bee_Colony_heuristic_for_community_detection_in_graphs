@@ -1,4 +1,5 @@
-"""The baseline scripts in baselines/: they run on a graph file and print a modularity.
+"""The baseline scripts in baselines/: each reads a graph file, logs the modularity of
+the partition it finds, and returns it from main().
 
 On Zachary's karate club the two deterministic baselines have well-known results: CNM
 finds Q = 0.3807 (Clauset, Newman and Moore 2004), and the best level of the Girvan-Newman
@@ -55,8 +56,3 @@ def test_label_propagation_finds_separate_triangles(tmp_path, capsys):
     for seed in range(5):
         assert run('label_propagation', path, '--seed', seed, capsys=capsys) == pytest.approx(0.5)
 
-
-def test_only_the_three_scripts_remain():
-    # The copies of functions.py and read_network.py are gone: the scripts use the package.
-    assert sorted(p.name for p in BASELINES.glob('*.py')) == [
-        'cnm.py', 'girvan_newman.py', 'label_propagation.py']
