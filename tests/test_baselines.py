@@ -55,4 +55,3 @@ def test_label_propagation_finds_separate_triangles(tmp_path, capsys):
     path.write_text('a b\nb c\nc a\nd e\ne f\nf d\n')
     for seed in range(5):
         assert run('label_propagation', path, '--seed', seed, capsys=capsys) == pytest.approx(0.5)
-

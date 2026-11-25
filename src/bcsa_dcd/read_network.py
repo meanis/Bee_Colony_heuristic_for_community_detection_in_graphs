@@ -1,8 +1,8 @@
-from os import listdir
+import csv
 import logging
 import re
-import csv
 from copy import deepcopy
+from os import listdir
 
 import networkx as nx
 
@@ -10,12 +10,12 @@ logger = logging.getLogger(__name__)
 
 #########################################################################
 
+
 def read_static_network(file_):
 
     snapshots = []
 
     with open(file_) as file:
-
         reader = csv.reader(file, delimiter=' ')
 
         g = nx.Graph()
@@ -29,7 +29,9 @@ def read_static_network(file_):
 
     return snapshots
 
+
 #########################################################################
+
 
 def read_dynamic_network(folder_):
 
@@ -39,20 +41,19 @@ def read_dynamic_network(folder_):
     g = nx.Graph()
 
     for file_ in network_files:
-
         g.remove_edges_from(list(g.edges))
 
-        file = open(folder_ + '/' + file_)
+        with open(folder_ + '/' + file_) as file:
+            reader = csv.reader(file, delimiter=' ')
 
-        reader = csv.reader(file, delimiter=' ')
-
-        for line in reader:
-            g.add_edge(line[0], line[1])
+            for line in reader:
+                g.add_edge(line[0], line[1])
 
         snapshots.append(deepcopy(g))
 
     snapshots = [nx.convert_node_labels_to_integers(g) for g in snapshots]
 
     return snapshots
+
 
 #########################################################################

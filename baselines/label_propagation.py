@@ -18,8 +18,9 @@ logger = logging.getLogger('baselines.label_propagation')
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument('graph', help='graph file: one edge per line, two node names and a space')
-    parser.add_argument('--seed', type=int,
-                        help='seed for the label propagation order, to make runs reproducible')
+    parser.add_argument(
+        '--seed', type=int, help='seed for the label propagation order, to make runs reproducible'
+    )
     args = parser.parse_args(argv)
 
     [g] = read_static_network(args.graph)

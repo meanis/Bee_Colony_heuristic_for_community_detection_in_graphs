@@ -26,29 +26,54 @@ def build_parser():
     parser = argparse.ArgumentParser(
         prog='bcsa-dcd',
         description='Detect communities in a static graph, or in each snapshot of a dynamic '
-                    'graph, with an artificial bee colony and simulated annealing heuristic.')
+        'graph, with an artificial bee colony and simulated annealing heuristic.',
+    )
     parser.add_argument(
-        'network', type=Path,
-        help='a graph file (static mode), or a folder of graph*.csv snapshot files (dynamic mode)')
-    parser.add_argument('--mode', required=True, choices=['static', 'dynamic'],
-                        help='one graph, or a sequence of snapshots')
-    parser.add_argument('--config', type=Path, default=Path('config.toml'),
-                        help='TOML parameter file (default: %(default)s)')
-    parser.add_argument('--output', type=Path, default=Path('results.csv'),
-                        help='results file, one row per run (default: %(default)s)')
-    parser.add_argument('--runs', type=positive_int, default=1,
-                        help='number of runs, one results row each (default: %(default)s)')
-    parser.add_argument('--seed', type=int,
-                        help='seed for the random number generator, to make runs reproducible')
+        'network',
+        type=Path,
+        help='a graph file (static mode), or a folder of graph*.csv snapshot files (dynamic mode)',
+    )
+    parser.add_argument(
+        '--mode',
+        required=True,
+        choices=['static', 'dynamic'],
+        help='one graph, or a sequence of snapshots',
+    )
+    parser.add_argument(
+        '--config',
+        type=Path,
+        default=Path('config.toml'),
+        help='TOML parameter file (default: %(default)s)',
+    )
+    parser.add_argument(
+        '--output',
+        type=Path,
+        default=Path('results.csv'),
+        help='results file, one row per run (default: %(default)s)',
+    )
+    parser.add_argument(
+        '--runs',
+        type=positive_int,
+        default=1,
+        help='number of runs, one results row each (default: %(default)s)',
+    )
+    parser.add_argument(
+        '--seed', type=int, help='seed for the random number generator, to make runs reproducible'
+    )
 
     plots = parser.add_mutually_exclusive_group()
     plots.add_argument('--no-plot', action='store_true', help='draw no plots')
-    plots.add_argument('--plot-dir', type=Path,
-                       help='save the plots as PNG files in this folder instead of showing them')
+    plots.add_argument(
+        '--plot-dir',
+        type=Path,
+        help='save the plots as PNG files in this folder instead of showing them',
+    )
 
     verbosity = parser.add_mutually_exclusive_group()
     verbosity.add_argument('-v', '--verbose', action='store_true', help='also log debug messages')
-    verbosity.add_argument('-q', '--quiet', action='store_true', help='log only warnings and errors')
+    verbosity.add_argument(
+        '-q', '--quiet', action='store_true', help='log only warnings and errors'
+    )
     return parser
 
 
@@ -92,8 +117,9 @@ def main(argv=None):
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with open(args.output, 'w', encoding='utf-8') as file:
         writer = csv.writer(file, lineterminator='\n')
-        writer.writerow(PARAM_COLUMNS + [f'Modularité of snapshot {i}'
-                                         for i in range(1, len(snapshots) + 1)])
+        writer.writerow(
+            PARAM_COLUMNS + [f'Modularité of snapshot {i}' for i in range(1, len(snapshots) + 1)]
+        )
         for run in range(1, args.runs + 1):
             logger.info('Run %d of %d', run, args.runs)
             partitions, analysis_data = BCSADCD(params, snapshots).execute()

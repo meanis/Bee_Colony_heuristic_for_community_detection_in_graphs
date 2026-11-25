@@ -41,12 +41,14 @@ def snapshot_dir(tmp_path, monkeypatch):
 
     Real os.listdir order depends on the filesystem, so tests pin it.
     """
+
     def write(*files):
         for name, text in files:
             (tmp_path / name).write_text(text)
         names = [name for name, _ in files]
         monkeypatch.setattr(read_network, 'listdir', lambda folder: list(names))
         return str(tmp_path)  # the reader joins paths with '/', so it needs a str
+
     return write
 
 
@@ -69,6 +71,7 @@ READERS = [pytest.param(read_static, id='static'), pytest.param(read_dynamic, id
 
 # --- Both readers ----------------------------------------------------------------------
 
+
 @pytest.mark.parametrize('read', READERS)
 def test_numbering_by_first_appearance(tmp_path, read):
     # First appearance: 5 -> 0, 3 -> 1, 10 -> 2, 2 -> 3. Neither a string sort
@@ -87,6 +90,7 @@ def test_repeated_and_reversed_edges_collapse(tmp_path, read):
 
 # Current parsing quirks (issue #18). These pin today's behaviour; fixing #18 is a
 # Phase 4 task that will update them.
+
 
 @pytest.mark.parametrize('read', READERS)
 def test_names_are_strings(tmp_path, read):
@@ -120,6 +124,7 @@ def test_double_space_misreads_edge(tmp_path, read):
 
 # --- read_static_network ---------------------------------------------------------------
 
+
 def test_static_custom_graph_matches_reference():
     path = CUSTOM / 'graph-1.csv'
     snapshots = read_network.read_static_network(str(path))
@@ -131,13 +136,14 @@ def test_static_custom_graph_matches_reference():
 
 # --- read_dynamic_network --------------------------------------------------------------
 
+
 def test_dynamic_custom_dataset_matches_reference(monkeypatch):
     names = ['graph-1.csv', 'graph-2.csv', 'graph-3.csv']
     monkeypatch.setattr(read_network, 'listdir', lambda folder: list(names))
     snapshots = read_network.read_dynamic_network(str(CUSTOM))
     expected = reference_snapshots([(CUSTOM / name).read_text() for name in names])
     assert len(snapshots) == 3
-    for g, (nodes, edges) in zip(snapshots, expected):
+    for g, (nodes, edges) in zip(snapshots, expected, strict=True):
         assert set(g.nodes) == nodes
         assert edge_set(g) == edges
 
@@ -173,7 +179,7 @@ def test_file_filter(snapshot_dir):
     # that would add nodes if it were read.
     folder = snapshot_dir(
         ('graph-1.csv', '0 1\n'),
-        ('graph-2.txt', 'txt1 txt2\n'),       # RDyn's output name (issue #6)
+        ('graph-2.txt', 'txt1 txt2\n'),  # RDyn's output name (issue #6)
         ('notes.csv', 'n1 n2\n'),
         ('mygraph-3.csv', 'm1 m2\n'),
         ('graph-4.csv.bak', 'b1 b2\n'),

@@ -1,14 +1,15 @@
-from operator import attrgetter
 import copy
 import logging
 import random as rand
-import numpy as np
-import networkx as nx
+from operator import attrgetter
 
-from .food_source import FoodSource
+import numpy as np
+
 from . import functions as fun
+from .food_source import FoodSource
 
 logger = logging.getLogger(__name__)
+
 
 class BCSA:
     def __init__(self, params):
@@ -41,22 +42,20 @@ class BCSA:
 
         ######################################################
 
-        self.snapshot_analysis_data = {
-            'global_optimal': []
-        }
+        self.snapshot_analysis_data = {'global_optimal': []}
 
-#########################################################################################
+    #########################################################################################
 
     def execute(self, snapshot, initial_population):
 
-        self.snapshot_analysis_data = {
-            'global_optimal': []
-        }
+        self.snapshot_analysis_data = {'global_optimal': []}
 
         self.snapshot = snapshot
-        #self.pearson_correlation = fun.pearson_correlation(self.snapshot)
+        # self.pearson_correlation = fun.pearson_correlation(self.snapshot)
 
-        self.last_snapshot_community_structure = max(initial_population, key = attrgetter('cost')).solution
+        self.last_snapshot_community_structure = max(
+            initial_population, key=attrgetter('cost')
+        ).solution
         self.population = self.repair_population(initial_population, self.snapshot)
         self.global_best_fs = copy.deepcopy(self.best_fs())
 
@@ -66,7 +65,7 @@ class BCSA:
             self.scout_bees_stage()
             self.simulated_annealing_stage(self.best_fs())
 
-            if (self.best_fs().cost > self.global_best_fs.cost ):
+            if self.best_fs().cost > self.global_best_fs.cost:
                 self.global_best_fs = copy.deepcopy(self.best_fs())
                 logger.debug('Cycle %d: new best objective %s', cycle, self.global_best_fs.cost)
 
@@ -74,7 +73,7 @@ class BCSA:
 
         return self.global_best_fs, self.population, self.snapshot_analysis_data
 
-#########################################################################################
+    #########################################################################################
 
     def employed_bees_stage(self):
 
@@ -86,79 +85,73 @@ class BCSA:
 
             self.update_fs(fs, best_fs)
 
-#########################################################################################
+    #########################################################################################
 
     def onlooker_bees_stage(self):
 
         for _ in range(self.onlooker_bees_number):
-
             selected_fs = self.global_selection()
             new_fs = self.generate_fs(selected_fs)
 
             best_fs = self.greedy_selection(selected_fs, new_fs)
             self.update_fs(selected_fs, best_fs)
 
-#########################################################################################
+    #########################################################################################
 
     def scout_bees_stage(self):
 
         for fs in self.population:
-
             if fs.trials > self.limit_cycles:
-
                 new_fs = self.random_selection()
 
                 fs.solution = new_fs.solution
                 fs.cost = new_fs.cost
                 fs.trials = new_fs.trials
 
-#########################################################################################
+    #########################################################################################
 
     def accept(self, new_fs_cost, current_fs_cost, temperature):
 
-        if (new_fs_cost > current_fs_cost):
+        if new_fs_cost > current_fs_cost:
             return True
         else:
             r = rand.uniform(1, np.e)
-            return (r < ( np.exp( ( current_fs_cost - new_fs_cost ) / temperature ) ))
+            return r < (np.exp((current_fs_cost - new_fs_cost) / temperature))
 
     def simulated_annealing_stage(self, fs):
 
         temperature = self.T0
 
         while temperature > self.Tmin:
-
             for _ in range(self.cycles_per_t):
-
                 new_fs = self.generate_fs(fs)
 
                 if self.accept(new_fs.cost, fs.cost, temperature):
-
                     fs.solution = new_fs.solution
                     fs.cost = new_fs.cost
 
             temperature = temperature * self.alpha
 
-#########################################################################################
+    #########################################################################################
 
     def generate_fs(self, fs):
 
         new_solution = fs.solution.copy()
 
         n = len(fs.solution)
-        indexes = range(0, n)
+        indexes = range(n)
         chosen_indexes = rand.sample(indexes, int(n * self.delta))
 
         for i in chosen_indexes:
             try:
                 new_solution[i] = rand.choice(list(self.snapshot[i]))
-                #new_solution[i] = rand.choices(list(self.snapshot[i]), self.pearson_correlation[i])[0]
+                # Disabled variant: rand.choices(neighbours, self.pearson_correlation[i])[0]
             except IndexError:
                 new_solution[i] = i
 
         return FoodSource(new_solution, self.cost(new_solution))
 
-#########################################################################################
+    #########################################################################################
 
     def greedy_selection(self, fs1, fs2):
 
@@ -167,7 +160,7 @@ class BCSA:
         else:
             return fs2
 
-#########################################################################################
+    #########################################################################################
 
     def global_selection(self):
 
@@ -178,7 +171,7 @@ class BCSA:
 
         return selected_fs
 
-#########################################################################################
+    #########################################################################################
 
     def random_selection(self):
 
@@ -186,26 +179,28 @@ class BCSA:
 
         solution = []
 
-        for i in range(0, n):
+        for i in range(n):
             try:
                 solution.append(rand.choice(list(self.snapshot[i])))
-                #solution.append(rand.choices(list(self.snapshot[i]), self.pearson_correlation[i])[0])
+                # Disabled variant: rand.choices(neighbours, self.pearson_correlation[i])[0]
             except IndexError:
-                solution.append(i)        
+                solution.append(i)
 
         cost = self.cost(solution)
 
         return FoodSource(solution, cost)
 
-#########################################################################################
+    #########################################################################################
 
     def cost(self, solution):
 
         community_structure = fun.locus_decode(solution)
-        cost = (self.gamma * fun.modularity(self.snapshot, community_structure)) + ((1-self.gamma) * fun.nmi(self.last_snapshot_community_structure, solution))
+        cost = (self.gamma * fun.modularity(self.snapshot, community_structure)) + (
+            (1 - self.gamma) * fun.nmi(self.last_snapshot_community_structure, solution)
+        )
         return cost
 
-#########################################################################################
+    #########################################################################################
 
     def update_fs(self, fs, new_fs):
 
@@ -216,21 +211,19 @@ class BCSA:
             fs.cost = new_fs.cost
             fs.trials = new_fs.trials
 
-#########################################################################################
-    
+    #########################################################################################
+
     def best_fs(self):
 
-        best_fs = max(self.population, key = attrgetter('cost'))
+        best_fs = max(self.population, key=attrgetter('cost'))
         return best_fs
 
-#########################################################################################
+    #########################################################################################
 
     def repair_population(self, initial_population, snapshot):
 
         for fs in initial_population:
-
             for v in range(len(fs.solution)):
-
                 if fs.solution[v] not in snapshot[v]:
                     try:
                         fs.solution[v] = rand.choice(list(self.snapshot[v]))
@@ -238,7 +231,6 @@ class BCSA:
                         fs.solution[v] = v
 
             for v in range(len(fs.solution), snapshot.number_of_nodes()):
-
                 try:
                     fs.solution.append(rand.choice(list(self.snapshot[v])))
                 except IndexError:
@@ -247,5 +239,6 @@ class BCSA:
             fs.cost = self.cost(fs.solution)
 
         return initial_population
+
 
 #########################################################################################

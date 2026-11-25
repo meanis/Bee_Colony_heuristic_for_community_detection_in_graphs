@@ -28,6 +28,30 @@ dev = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
+[tool.ruff]
+line-length = 100
+# First-party code for import sorting: the package, and the tests' helpers module.
+src = ["src", "tests"]
+
+[tool.ruff.format]
+quote-style = "single"  # docstrings keep double quotes (PEP 257)
+
+[tool.ruff.lint]
+select = [
+    "E", "W",  # pycodestyle
+    "F",       # pyflakes
+    "I",       # import sorting
+    "UP",      # pyupgrade
+    "B",       # bugbear: likely bugs
+    "SIM",     # simplifications
+    "N",       # PEP 8 naming
+    "T20",     # no print: use logging
+    "G",       # logging calls: no f-strings in messages
+    "LOG",     # logging misuse
+    "RUF",     # ruff's own rules
+    "PIE",     # misc. unnecessary code
+]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

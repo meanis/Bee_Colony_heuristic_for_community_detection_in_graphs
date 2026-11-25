@@ -12,15 +12,18 @@ def as_set(communities):
     return {frozenset(c) for c in communities}
 
 
-@pytest.mark.parametrize('solution, expected', [
-    ([1, 0, 3, 2], [{0, 1}, {2, 3}]),        # two pairs pointing at each other
-    ([1, 2, 3, 3], [{0, 1, 2, 3}]),          # a chain
-    ([1, 1, 1, 1], [{0, 1, 2, 3}]),          # a star around node 1
-    ([0, 1, 2], [{0}, {1}, {2}]),            # self-pointing genes are singletons
-    ([1, 0, 2], [{0, 1}, {2}]),              # one singleton among a pair
-    ([0], [{0}]),
-    ([], []),
-])
+@pytest.mark.parametrize(
+    'solution, expected',
+    [
+        ([1, 0, 3, 2], [{0, 1}, {2, 3}]),  # two pairs pointing at each other
+        ([1, 2, 3, 3], [{0, 1, 2, 3}]),  # a chain
+        ([1, 1, 1, 1], [{0, 1, 2, 3}]),  # a star around node 1
+        ([0, 1, 2], [{0}, {1}, {2}]),  # self-pointing genes are singletons
+        ([1, 0, 2], [{0, 1}, {2}]),  # one singleton among a pair
+        ([0], [{0}]),
+        ([], []),
+    ],
+)
 def test_hand_examples(solution, expected):
     assert as_set(locus_decode(solution)) == as_set(expected)
 

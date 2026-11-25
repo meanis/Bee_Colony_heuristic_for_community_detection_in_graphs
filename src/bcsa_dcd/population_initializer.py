@@ -1,12 +1,12 @@
 import random as rand
-import networkx as nx
+
 from networkx.algorithms.community import greedy_modularity_communities
 
 from . import functions as fun
 from .food_source import FoodSource
 
+
 class PopulationInitializer:
-    
     def __init__(self, sigma, nb_s):
 
         ######################################################
@@ -19,7 +19,7 @@ class PopulationInitializer:
     def init_snapshot_pop(self, snapshot):
 
         self.snapshot = snapshot
-        #self.pearson_correlation = fun.pearson_correlation(self.snapshot)
+        # self.pearson_correlation = fun.pearson_correlation(self.snapshot)
 
         population = []
 
@@ -37,10 +37,10 @@ class PopulationInitializer:
 
         solution = []
 
-        for i in range(0, n):
+        for i in range(n):
             try:
                 solution.append(rand.choice(list(self.snapshot[i])))
-                #solution = [rand.choices(list(self.snapshot[i]), self.pearson_correlation[i])[0] for i in range(n)]
+                # Disabled variant: rand.choices(neighbours, self.pearson_correlation[i])[0]
             except IndexError:
                 solution.append(i)
 
@@ -50,12 +50,12 @@ class PopulationInitializer:
 
     def elite_selection(self):
 
-        solution = [ 0 for _ in range(0, self.snapshot.number_of_nodes()) ]
+        solution = [0 for _ in range(self.snapshot.number_of_nodes())]
 
         for c in greedy_modularity_communities(self.snapshot):
             for node1 in c:
                 for node2 in c:
-                    if (node2 in self.snapshot[node1]):
+                    if node2 in self.snapshot[node1]:
                         solution[node1] = node2
         cost = self.cost(solution)
 

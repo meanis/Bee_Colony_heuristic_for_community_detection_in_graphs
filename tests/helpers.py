@@ -12,9 +12,17 @@ CUSTOM = Path(__file__).resolve().parent.parent / 'Datasets' / 'Dynamic' / 'Cust
 # the default 0.05, int(10 * 0.05) = 0 genes change). sigma = 0.2 seeds 2 of the 10 food
 # sources from CNM, so the elite path runs too.
 CONFIG = {
-    'nb_s': 10, 'nb_cycles': 5, 'limit_cycles': 2,
-    'employed_bees_percentage': 0.5, 'T0': 1000, 'Tmin': 100, 'alpha': 0.6,
-    'cycles_per_t': 2, 'gamma': 0.8, 'sigma': 0.2, 'delta': 0.2,
+    'nb_s': 10,
+    'nb_cycles': 5,
+    'limit_cycles': 2,
+    'employed_bees_percentage': 0.5,
+    'T0': 1000,
+    'Tmin': 100,
+    'alpha': 0.6,
+    'cycles_per_t': 2,
+    'gamma': 0.8,
+    'sigma': 0.2,
+    'delta': 0.2,
 }
 
 
@@ -27,10 +35,16 @@ def toml_value(value):
 
 
 def write_config(path, **overrides):
-    """Write CONFIG as TOML, with overrides (None leaves the key out); return the path as a string."""
+    """Write CONFIG as TOML, with overrides (None leaves the key out).
+
+    Return the path as a string.
+    """
     values = {**CONFIG, **overrides}
-    path.write_text(''.join(f'{key} = {toml_value(value)}\n'
-                            for key, value in values.items() if value is not None))
+    path.write_text(
+        ''.join(
+            f'{key} = {toml_value(value)}\n' for key, value in values.items() if value is not None
+        )
+    )
     return str(path)
 
 

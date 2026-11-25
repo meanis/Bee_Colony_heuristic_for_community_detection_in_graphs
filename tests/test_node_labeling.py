@@ -15,14 +15,17 @@ def assert_labels_match(labels, communities):
     assert len(set(labels)) == len(communities)
 
 
-@pytest.mark.parametrize('solution', [
-    [1, 0, 3, 2],          # two pairs
-    [1, 0, 3, 2, 5, 4],    # three pairs: a third community must not reuse a label
-    [1, 2, 3, 3],          # one community
-    [0, 1, 2],             # self-pointing genes: three singletons
-    [1, 0, 2, 4, 3],       # a pair, a singleton, a pair
-    [0],
-])
+@pytest.mark.parametrize(
+    'solution',
+    [
+        [1, 0, 3, 2],  # two pairs
+        [1, 0, 3, 2, 5, 4],  # three pairs: a third community must not reuse a label
+        [1, 2, 3, 3],  # one community
+        [0, 1, 2],  # self-pointing genes: three singletons
+        [1, 0, 2, 4, 3],  # a pair, a singleton, a pair
+        [0],
+    ],
+)
 def test_hand_examples(solution):
     assert_labels_match(node_labeling(solution), reference_communities(solution))
 

@@ -119,10 +119,13 @@ def test_edge_weights_are_ignored():
     assert modularity(g, [{0, 1, 2}, {3, 4, 5}]) == approx(TRIANGLES_Q)
 
 
-@pytest.mark.parametrize('partition', [
-    [{0, 1, 2}, {2, 3, 4, 5}],  # node 2 in two communities
-    [{0, 1, 2}, {3, 4}],        # node 5 missing
-])
+@pytest.mark.parametrize(
+    'partition',
+    [
+        [{0, 1, 2}, {2, 3, 4, 5}],  # node 2 in two communities
+        [{0, 1, 2}, {3, 4}],  # node 5 missing
+    ],
+)
 def test_invalid_partition_raises(partition):
     with pytest.raises(NotAPartition):
         modularity(two_bridged_triangles(), partition)

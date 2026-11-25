@@ -6,6 +6,7 @@ search changes, as long as it still produces valid results.
 
 import csv
 import random
+from itertools import pairwise
 
 import matplotlib
 
@@ -19,8 +20,19 @@ from helpers import CONFIG, CUSTOM, write_config
 
 CUSTOM_FILES = ['graph-1.csv', 'graph-2.csv', 'graph-3.csv']
 RUNS = 2
-PARAM_COLUMNS = ['nb_s', 'nb_cycles', 'limit_cycles', 'employed_bees_percentage', 'T0',
-                 'Tmin', 'alpha', 'cycles_per_t', 'gamma', 'sigma', 'delta']
+PARAM_COLUMNS = [
+    'nb_s',
+    'nb_cycles',
+    'limit_cycles',
+    'employed_bees_percentage',
+    'T0',
+    'Tmin',
+    'alpha',
+    'cycles_per_t',
+    'gamma',
+    'sigma',
+    'delta',
+]
 
 # A dynamic graph that grows (f and g join in snapshot 2, h in snapshot 3) and leaves
 # nodes isolated (d and e in snapshot 3). Custom keeps the same 10 nodes throughout, so
@@ -35,8 +47,10 @@ GROWING = [
 @pytest.fixture
 def pin_listing(monkeypatch):
     """Fix the snapshot order to the given names (real listdir order varies, issue #2)."""
+
     def pin(names):
         monkeypatch.setattr(read_network, 'listdir', lambda folder: list(names))
+
     return pin
 
 
@@ -68,7 +82,7 @@ def run(snapshots, seed):
 def assert_valid_result(snapshots, partitions, analysis_data):
     gamma = CONFIG['gamma']
     assert len(partitions) == len(analysis_data) == len(snapshots)
-    for g, fs, data in zip(snapshots, partitions, analysis_data):
+    for g, fs, data in zip(snapshots, partitions, analysis_data, strict=True):
         # A locus-based solution: one gene per node, pointing to a neighbour, or to the
         # node itself when it is isolated.
         assert len(fs.solution) == g.number_of_nodes()
@@ -85,7 +99,7 @@ def assert_valid_result(snapshots, partitions, analysis_data):
         # Convergence history: one entry per cycle, never decreasing, ending at the result.
         history = data['global_optimal']
         assert len(history) == CONFIG['nb_cycles']
-        assert all(a <= b for a, b in zip(history, history[1:]))
+        assert all(a <= b for a, b in pairwise(history))
         assert history[-1] == fs.cost
 
 
@@ -125,21 +139,26 @@ def test_cli_writes_results_and_plots(mode, custom_dir, tmp_path, monkeypatch, c
     monkeypatch.setattr(analysis.plt, 'show', lambda: shown.append(1))
     monkeypatch.chdir(tmp_path)  # results.csv goes to the working directory by default
     try:
-        assert cli.main([path, '--mode', mode, '--config', config_file, '--seed', '0',
-                         '--runs', str(RUNS)]) == 0
+        assert (
+            cli.main(
+                [path, '--mode', mode, '--config', config_file, '--seed', '0', '--runs', str(RUNS)]
+            )
+            == 0
+        )
     finally:
         analysis.plt.close('all')
 
     with open(tmp_path / 'results.csv', newline='') as file:
         header, *rows = list(csv.reader(file))
-    assert header == PARAM_COLUMNS + [f'Modularité of snapshot {i}'
-                                      for i in range(1, n_snapshots + 1)]
+    assert header == PARAM_COLUMNS + [
+        f'Modularité of snapshot {i}' for i in range(1, n_snapshots + 1)
+    ]
     assert len(rows) == len(runs) == RUNS
-    for row, (partitions, _) in zip(rows, runs):
-        assert [float(v) for v in row[:len(PARAM_COLUMNS)]] == [CONFIG[k] for k in PARAM_COLUMNS]
+    for row, (partitions, _) in zip(rows, runs, strict=True):
+        assert [float(v) for v in row[: len(PARAM_COLUMNS)]] == [CONFIG[k] for k in PARAM_COLUMNS]
         # Each snapshot column is that run's final objective (not pure modularity,
         # despite the header: issue #3). str(float) round-trips exactly.
-        assert [float(v) for v in row[len(PARAM_COLUMNS):]] == [fs.cost for fs in partitions]
+        assert [float(v) for v in row[len(PARAM_COLUMNS) :]] == [fs.cost for fs in partitions]
     assert len(shown) == 2 * n_snapshots  # a community drawing and a convergence chart each
 
     assert capsys.readouterr().out == ''  # progress goes to logging, never to print

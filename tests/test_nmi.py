@@ -23,7 +23,7 @@ def reference_nmi(a, b):
     labeling splits the nodes, so they agree.
     """
     n = len(a)
-    count_a, count_b, joint = Counter(a), Counter(b), Counter(zip(a, b))
+    count_a, count_b, joint = Counter(a), Counter(b), Counter(zip(a, b, strict=True))
     h_a = -sum(c / n * math.log(c / n) for c in count_a.values())
     h_b = -sum(c / n * math.log(c / n) for c in count_b.values())
     if h_a + h_b == 0:  # exact: a constant labeling's entropy is -1 * log(1) = 0.0
@@ -32,8 +32,8 @@ def reference_nmi(a, b):
     return 2 * mi / (h_a + h_b)
 
 
-PAIRS = [1, 0, 3, 2]       # {0, 1} {2, 3}
-CROSSED = [2, 3, 0, 1]     # {0, 2} {1, 3}: independent of PAIRS
+PAIRS = [1, 0, 3, 2]  # {0, 1} {2, 3}
+CROSSED = [2, 3, 0, 1]  # {0, 2} {1, 3}: independent of PAIRS
 ONE_COMMUNITY = [1, 2, 3, 0]
 
 
@@ -51,22 +51,22 @@ def test_independent_partitions():
 
 
 @pytest.mark.parametrize(
-    "a, b, expected",
+    'a, b, expected',
     [
         # Both constant: H(A) + H(B) = 0, the 0/0 case. Defined as a perfect match.
-        ([0], [0], 1),                                  # a single node
+        ([0], [0], 1),  # a single node
         (ONE_COMMUNITY, [3, 0, 1, 2], 1),
         # Only one side constant: I(A; B) = 0, H(A) + H(B) > 0, so NMI = 0.
         (ONE_COMMUNITY, PAIRS, 0),
         (PAIRS, ONE_COMMUNITY, 0),
-        ([0, 1, 2], [1, 2, 0], 0),                      # all singletons vs one triangle
+        ([0, 1, 2], [1, 2, 0], 0),  # all singletons vs one triangle
         # B is not constant, but becomes constant once cut to A's length:
         # B = {0, 1} {2}, compared on nodes 0-1 only, which are both in one community.
         ([1, 0], [1, 0, 2], 1),
     ],
 )
 def test_zero_entropy(a, b, expected):
-    la, lb = reference_labels(a), reference_labels(b)[:len(a)]
+    la, lb = reference_labels(a), reference_labels(b)[: len(a)]
     assert reference_nmi(la, lb) == approx(expected)
     assert nmi(a, b) == approx(expected)  # approx also rejects NaN
 
@@ -88,6 +88,7 @@ def test_random_solutions_match_reference():
 
 
 # --- Growing graphs: A is the previous snapshot's solution, B the current one. ---
+
 
 def test_longer_second_solution_is_compared_on_the_shared_nodes():
     # Previous snapshot: karate's first 20 nodes; current snapshot: all 34.
@@ -116,4 +117,4 @@ def test_new_node_can_merge_old_communities():
 def test_longer_first_solution_raises():
     # Never happens in the app: nodes are never removed, so later solutions are never shorter.
     with pytest.raises(ValueError):
-        nmi(PAIRS + [4], PAIRS)
+        nmi([*PAIRS, 4], PAIRS)

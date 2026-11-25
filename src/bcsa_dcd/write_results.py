@@ -1,7 +1,6 @@
-import csv
-
 def write_results(writer, params, analysis_data):
-        writer.writerow([
+    writer.writerow(
+        [
             params['nb_s'],
             params['nb_cycles'],
             params['limit_cycles'],
@@ -13,6 +12,6 @@ def write_results(writer, params, analysis_data):
             params['gamma'],
             params['sigma'],
             params['delta'],
-            ] + [
-                snapshot_analysis_data['global_optimal'][-1] for snapshot_analysis_data in analysis_data
-            ])
+        ]
+        + [snapshot_analysis_data['global_optimal'][-1] for snapshot_analysis_data in analysis_data]
+    )

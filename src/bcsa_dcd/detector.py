@@ -1,11 +1,12 @@
 from .bcsa import BCSA
 from .population_initializer import PopulationInitializer
 
+
 class BCSADCD:
     def __init__(self, params, snapshots):
-        
+
         ######################################################
-        
+
         self.params = params
         self.snapshots = snapshots
 
@@ -23,7 +24,9 @@ class BCSADCD:
         analysis_data = []
 
         for snapshot in self.snapshots:
-            community_structure, initial_population, snapshot_analysis_data = mobcsa_.execute(snapshot, initial_population)
+            community_structure, initial_population, snapshot_analysis_data = mobcsa_.execute(
+                snapshot, initial_population
+            )
             community_structures.append(community_structure)
             analysis_data.append(snapshot_analysis_data)
 

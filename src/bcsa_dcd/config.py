@@ -52,7 +52,7 @@ def validate(raw):
     """Check every key of raw; return them typed (ints as int, reals as float)."""
     problems = []
     params = {}
-    for key, value in raw.items():
+    for key in raw:
         if key in REMOVED:
             problems.append(f'{key} is no longer a parameter: {REMOVED[key]}')
         elif key not in PARAMETERS:
@@ -68,8 +68,11 @@ def validate(raw):
         # bool is a subclass of int in Python, but true/false is never a number here.
         if kind is int and (isinstance(value, bool) or not isinstance(value, int)):
             problems.append(f'{key} must be an integer, got {value!r}')
-        elif kind is float and (isinstance(value, bool) or not isinstance(value, (int, float))
-                                or not math.isfinite(value)):
+        elif kind is float and (
+            isinstance(value, bool)
+            or not isinstance(value, (int, float))
+            or not math.isfinite(value)
+        ):
             problems.append(f'{key} must be a finite number, got {value!r}')
         elif not in_range(value):
             problems.append(f'{key} must be {allowed}, got {value!r}')
